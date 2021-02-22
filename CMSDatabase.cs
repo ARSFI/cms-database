@@ -1,0 +1,196 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
+using MySql.Data.MySqlClient;
+using NLog;
+using Polly;
+
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+
+namespace cms.database
+{
+    public class CMSDatabase : ICMSDatabase
+    {
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        private readonly string _connectionString;
+
+        /// <summary>
+        /// This policy will attempt the action up to 7 times (~4 minutes) with
+        /// increasing delays between each attempt. Each failure is logged as a
+        /// 'warning'. After 7 failures an 'error' is reported.
+        /// </summary>
+        private readonly Policy _retryPolicy = Policy
+            //Don't retry for syntax errors - they're not going away
+            .Handle<MySqlException>(ex => !ex.Message.Contains("syntax error", StringComparison.OrdinalIgnoreCase))
+            .Or<TimeoutException>()
+            .Or<IOException>()
+            .WaitAndRetry(
+                7,
+                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                (exception, timeSpan, context) =>
+                {
+                    Log.Warn(
+                        $"Received exception: '{exception.Message}'. Delaying for {timeSpan.TotalSeconds} seconds. \r\nSQL Command: {context["SQL"]}.");
+                }
+            );
+
+        public CMSDatabase(CMSDatabaseConfiguration config)
+        {
+            _connectionString = config.Connection.ToString();
+        }
+
+        public bool ExistsQuery(string sql)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(sql));
+            Log.Trace($"Query: {sql}");
+            bool blnResult = false;
+            try
+            {
+                _retryPolicy.Execute(ctx =>
+                {
+                    using MySqlConnection connection = new MySqlConnection(_connectionString);
+                    connection.Open();
+                    using DataSet ds = new DataSet();
+                    using MySqlCommand cmd = new MySqlCommand(sql, connection);
+                    using MySqlDataAdapter adpMySql = new MySqlDataAdapter {SelectCommand = cmd};
+                    adpMySql.Fill(ds);
+                    blnResult = ds.Tables[0].Rows.Count > 0;
+                }, new Dictionary<string, object> {{"SQL", sql}});
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, sql);
+            }
+
+            return blnResult;
+        }
+
+        public DataSet FillDataSet(string sql, string tableName = "Records")
+        {
+            Debug.Assert(!string.IsNullOrEmpty(sql));
+            Log.Trace($"Query: {sql}");
+            DataSet ds = new DataSet();
+            try
+            {
+                _retryPolicy.Execute(ctx =>
+                {
+                    using MySqlConnection connection = new MySqlConnection(_connectionString);
+                    connection.Open();
+                    using MySqlCommand cmd = new MySqlCommand(sql, connection);
+                    using MySqlDataAdapter adpMySql = new MySqlDataAdapter {SelectCommand = cmd};
+                    adpMySql.Fill(ds, tableName);
+                }, new Dictionary<string, object> {{"SQL", sql}});
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, sql);
+            }
+
+            return ds;
+        }
+
+        public string FillSingleValue(string sql)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(sql));
+            Log.Trace($"Query: {sql}");
+            string result = "";
+            try
+            {
+                _retryPolicy.Execute(ctx =>
+                {
+                    using MySqlConnection connection = new MySqlConnection(_connectionString);
+                    connection.Open();
+                    using DataSet ds = new DataSet();
+                    using MySqlCommand cmd = new MySqlCommand(sql, connection);
+                    using MySqlDataAdapter adpMySql = new MySqlDataAdapter {SelectCommand = cmd};
+                    adpMySql.Fill(ds, "Records");
+                    if (ds.Tables[0].Rows.Count > 0)
+                    {
+                        result = Convert.ToString(ds.Tables[0].Rows[0][0]);
+                        if (string.IsNullOrWhiteSpace(result)) result = "";
+                    }
+                }, new Dictionary<string, object> {{"SQL", sql}});
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, sql);
+            }
+
+            return result;
+        }
+
+        public bool FillSingleValueBool(string sql)
+        {
+            try
+            {
+                var s = FillSingleValue(sql);
+                if (string.IsNullOrWhiteSpace(s)) return false;
+                if (s == "1") return true;
+                if (s == "0") return false;
+                return Convert.ToBoolean(s);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, sql);
+                return false;
+            }
+        }
+
+        public DateTime FillSingleValueDateTime(string sql)
+        {
+            try
+            {
+                var s = FillSingleValue(sql);
+                return Convert.ToDateTime(s);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return DateTime.MinValue;
+            }
+        }
+
+        public int FillSingleValueInt(string sql)
+        {
+            try
+            {
+                var s = FillSingleValue(sql);
+                if (int.TryParse(s, out var result)) return result;
+                return -1;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return -1;
+            }
+        }
+
+        public int NonQuery(string sql)
+        {
+            int result = -1;
+            try
+            {
+                _retryPolicy.Execute(ctx =>
+                {
+                    using MySqlConnection connection = new MySqlConnection(_connectionString);
+                    connection.Open();
+                    using MySqlCommand cmdMySqlCommand = new MySqlCommand(sql, connection);
+                    result = cmdMySqlCommand.ExecuteNonQuery();
+                }, new Dictionary<string, object> {{"SQL", sql}});
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, sql);
+            }
+
+            if (result > 0)
+                Log.Trace($"Records Impacted: {result}, Query: {sql}");
+            return result;
+        }
+    }
+}
+
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
