@@ -9,7 +9,7 @@ namespace cms.database
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         private readonly ICMSDatabase _database;
 
-        CMSProperties(ICMSDatabase database)
+        public CMSProperties(ICMSDatabase database)
         {
             _database = database;
         }
@@ -51,12 +51,21 @@ namespace cms.database
 
         public bool GetProperty(string propertyName, bool defaultValue)
         {
-            return Convert.ToBoolean(GetProperty(propertyName, defaultValue.ToString()));
+            var s = GetProperty(propertyName, defaultValue.ToString());
+            if (s == "1" || s.ToLower() == "yes") return true;
+            if (s == "0" || s.ToLower() == "no") return false;
+            return Convert.ToBoolean(s);
         }
 
         public int GetProperty(string propertyName, int defaultValue)
         {
             return Convert.ToInt32(GetProperty(propertyName, defaultValue.ToString()));
+        }
+
+        public DateTime GetProperty(string propertyName, DateTime defaultValue)
+        {
+            var s = GetProperty(propertyName, ""); //get value as a string
+            return DateTime.Parse(s, null, System.Globalization.DateTimeStyles.RoundtripKind);
         }
 
         public List<string> GetPropertyValueList(string propertyName, string defaultValue)
@@ -114,5 +123,21 @@ namespace cms.database
             var sql = $"REPLACE INTO Properties (Timestamp,Property,Value) VALUES ('{ts}','{propertyName}','{value}')";
             _database.NonQuery(sql);
         }
+
+        public void SaveProperty(string propertyName, bool value)
+        {
+            SaveProperty(propertyName, value.ToString());
+        }
+
+        public void SaveProperty(string propertyName, int value)
+        {
+            SaveProperty(propertyName, value.ToString());
+        }
+
+        public void SaveProperty(string propertyName, DateTime value)
+        {
+            SaveProperty(propertyName, value.ToString("o"));
+        }
+
     }
 }

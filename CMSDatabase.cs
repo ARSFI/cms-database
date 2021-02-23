@@ -16,11 +16,9 @@ namespace cms.database
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         private readonly string _connectionString;
 
-        /// <summary>
-        /// This policy will attempt the action up to 7 times (~4 minutes) with
-        /// increasing delays between each attempt. Each failure is logged as a
-        /// 'warning'. After 7 failures an 'error' is reported.
-        /// </summary>
+        // This policy will attempt the action up to 7 times (~4 minutes) with
+        // increasing delays between each attempt. Each failure is logged as a
+        // 'warning'. After 7 failures an 'error' is reported.
         private readonly Policy _retryPolicy = Policy
             //Don't retry for syntax errors - they're not going away
             .Handle<MySqlException>(ex => !ex.Message.Contains("syntax error", StringComparison.OrdinalIgnoreCase))
@@ -36,9 +34,9 @@ namespace cms.database
                 }
             );
 
-        public CMSDatabase(CMSDatabaseConfiguration config)
+        public CMSDatabase(string connectionString)
         {
-            _connectionString = config.Connection.ToString();
+            _connectionString = connectionString;
         }
 
         public bool ExistsQuery(string sql)
