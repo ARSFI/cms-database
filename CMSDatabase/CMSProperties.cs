@@ -117,6 +117,19 @@ namespace cms.database
             }
         }
 
+        public bool PropertyExists(string propertyName)
+        {
+            try
+            {
+                return _database.ExistsQuery($"SELECT Property FROM Properties WHERE Property = '{propertyName}'");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return false;
+            }
+        }
+
         public void SaveProperty(string propertyName, string value)
         {
             var ts = DateTime.UtcNow.ToString("yyyy/MM/dd HH:mm");

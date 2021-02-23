@@ -1,4 +1,5 @@
-﻿using System;
+﻿using cms.database;
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MySql.Data.MySqlClient;
@@ -12,9 +13,11 @@ namespace cms.database.Tests
         private static ICMSDatabase _db;
 
         const string TestProp01Name = "Test-Prop-01";
+        const string TestProp03Name = "Test-Prop-03";
         const string TestProp01Value = "Test-Prop-01-value";
-        const string  BoolProp01Name = "Bool-Prop-01";
+        const string BoolProp01Name = "Bool-Prop-01";
         private const string TestProp02Name = "Date-Prop-01";
+        private const string IntProp01Name = "Int-Prop-01";
 
         [TestInitialize]
         public void TestInitialize()
@@ -108,13 +111,19 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyIntTest()
         {
-            Assert.Fail();
+            var p = new CMSProperties(_db);
+            p.SaveProperty(IntProp01Name, "42");
+            var i = p.GetProperty(IntProp01Name, 0);
+            Assert.AreEqual(i, 42);
         }
 
         [TestMethod()]
         public void GetPropertyStringTest()
         {
-            Assert.Fail();
+            var p = new CMSProperties(_db);
+            p.SaveProperty(TestProp01Name, TestProp01Value);
+            var s = p.GetProperty(TestProp01Name, "");
+            Assert.AreEqual(s, TestProp01Value);
         }
 
         [TestMethod()]
@@ -129,19 +138,50 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyTimestampTest()
         {
-            Assert.Fail();
+            var p = new CMSProperties(_db);
+            p.SaveProperty(TestProp01Name, TestProp01Value);
+            var d = p.GetPropertyTimestamp(TestProp01Name);
+            Assert.AreNotEqual(d, DateTime.MinValue);
         }
 
         [TestMethod()]
         public void GetPropertyValueListTest()
         {
-            Assert.Fail();
+            var p = new CMSProperties(_db);
+            p.SaveProperty(TestProp03Name, "abc,123,xyz,789");
+            var l = p.GetPropertyValueList(TestProp03Name, "1,2");
+            Assert.AreEqual(l.Count, 4);
         }
 
         [TestMethod()]
         public void DeletePropertyTest()
         {
-            Assert.Fail();
+            var p = new CMSProperties(_db);
+            p.SaveProperty(TestProp01Name, TestProp01Value);
+            Assert.AreEqual(p.PropertyExists(TestProp01Name), true);
+
+            p.DeleteProperty(TestProp01Name);
+            var b = p.PropertyExists(TestProp01Name);
+            Assert.AreEqual(b, false);
         }
+
+        [TestMethod()]
+        public void PropertyExistsTest()
+        {
+            var p = new CMSProperties(_db);
+            p.SaveProperty(TestProp01Name, TestProp01Value);
+            var b1 = p.PropertyExists(TestProp01Name);
+            Assert.AreEqual(b1, true);
+        }
+
+        [TestMethod()]
+        public void PropertyNotExistsTest()
+        {
+            var p = new CMSProperties(_db);
+            p.DeleteProperty(TestProp01Name);
+            var b2 = p.PropertyExists(TestProp01Name);
+            Assert.AreEqual(b2, false);
+        }
+
     }
 }

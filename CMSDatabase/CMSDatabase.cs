@@ -52,10 +52,10 @@ namespace cms.database
                     connection.Open();
                     using DataSet ds = new DataSet();
                     using MySqlCommand cmd = new MySqlCommand(sql, connection);
-                    using MySqlDataAdapter adpMySql = new MySqlDataAdapter {SelectCommand = cmd};
+                    using MySqlDataAdapter adpMySql = new MySqlDataAdapter { SelectCommand = cmd };
                     adpMySql.Fill(ds);
                     blnResult = ds.Tables[0].Rows.Count > 0;
-                }, new Dictionary<string, object> {{"SQL", sql}});
+                }, new Dictionary<string, object> { { "SQL", sql } });
             }
             catch (Exception ex)
             {
@@ -77,9 +77,9 @@ namespace cms.database
                     using MySqlConnection connection = new MySqlConnection(_connectionString);
                     connection.Open();
                     using MySqlCommand cmd = new MySqlCommand(sql, connection);
-                    using MySqlDataAdapter adpMySql = new MySqlDataAdapter {SelectCommand = cmd};
+                    using MySqlDataAdapter adpMySql = new MySqlDataAdapter { SelectCommand = cmd };
                     adpMySql.Fill(ds, tableName);
-                }, new Dictionary<string, object> {{"SQL", sql}});
+                }, new Dictionary<string, object> { { "SQL", sql } });
             }
             catch (Exception ex)
             {
@@ -102,14 +102,14 @@ namespace cms.database
                     connection.Open();
                     using DataSet ds = new DataSet();
                     using MySqlCommand cmd = new MySqlCommand(sql, connection);
-                    using MySqlDataAdapter adpMySql = new MySqlDataAdapter {SelectCommand = cmd};
+                    using MySqlDataAdapter adpMySql = new MySqlDataAdapter { SelectCommand = cmd };
                     adpMySql.Fill(ds, "Records");
                     if (ds.Tables[0].Rows.Count > 0)
                     {
                         result = Convert.ToString(ds.Tables[0].Rows[0][0]);
                         if (string.IsNullOrWhiteSpace(result)) result = "";
                     }
-                }, new Dictionary<string, object> {{"SQL", sql}});
+                }, new Dictionary<string, object> { { "SQL", sql } });
             }
             catch (Exception ex)
             {
@@ -176,15 +176,13 @@ namespace cms.database
                     connection.Open();
                     using MySqlCommand cmdMySqlCommand = new MySqlCommand(sql, connection);
                     result = cmdMySqlCommand.ExecuteNonQuery();
-                }, new Dictionary<string, object> {{"SQL", sql}});
+                }, new Dictionary<string, object> { { "SQL", sql } });
             }
             catch (Exception ex)
             {
                 Log.Error(ex, sql);
             }
-
-            if (result > 0)
-                Log.Trace($"Records Impacted: {result}, Query: {sql}");
+            Log.Trace($"Records Impacted: {result}, Query: {sql}");
             return result;
         }
     }
