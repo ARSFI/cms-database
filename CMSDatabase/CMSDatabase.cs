@@ -89,7 +89,7 @@ namespace cms.database
             return ds;
         }
 
-        public string FillSingleValue(string sql)
+        public string GetString(string sql)
         {
             Debug.Assert(!string.IsNullOrEmpty(sql));
             Log.Trace($"Query: {sql}");
@@ -119,11 +119,11 @@ namespace cms.database
             return result;
         }
 
-        public bool FillSingleValueBool(string sql)
+        public bool GetBoolean(string sql)
         {
             try
             {
-                var s = FillSingleValue(sql);
+                var s = GetString(sql);
                 if (string.IsNullOrWhiteSpace(s)) return false;
                 if (s == "1") return true;
                 if (s == "0") return false;
@@ -136,12 +136,12 @@ namespace cms.database
             }
         }
 
-        public DateTime FillSingleValueDateTime(string sql)
+        public DateTime GetDateTime(string sql)
         {
             try
             {
-                var s = FillSingleValue(sql);
-                return Convert.ToDateTime(s);
+                var s = GetString(sql);
+                return DateTime.Parse(s, null, System.Globalization.DateTimeStyles.RoundtripKind);
             }
             catch (Exception ex)
             {
@@ -150,11 +150,11 @@ namespace cms.database
             }
         }
 
-        public int FillSingleValueInt(string sql)
+        public int GetInteger(string sql)
         {
             try
             {
-                var s = FillSingleValue(sql);
+                var s = GetString(sql);
                 if (int.TryParse(s, out var result)) return result;
                 return -1;
             }

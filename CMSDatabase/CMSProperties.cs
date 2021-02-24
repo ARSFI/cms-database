@@ -25,7 +25,7 @@ namespace cms.database
             try
             {
                 var sql = $"SELECT Value FROM Properties WHERE Property='{propertyName}'";
-                string result = _database.FillSingleValue(sql);
+                string result = _database.GetString(sql);
                 //  Return result if no default specified
                 if (string.IsNullOrWhiteSpace(defaultValue))
                 {
@@ -74,7 +74,7 @@ namespace cms.database
             try
             {
                 var sql = $"SELECT Value FROM Properties WHERE Property='{propertyName}'";
-                string result = _database.FillSingleValue(sql);
+                string result = _database.GetString(sql);
 
                 //return empty list if no result and no default specified
                 if (string.IsNullOrWhiteSpace(result) && string.IsNullOrWhiteSpace(defaultValue))
@@ -106,7 +106,7 @@ namespace cms.database
             try
             {
                 var sql = $"SELECT Timestamp FROM Properties WHERE Property='{propertyName}'";
-                string result = _database.FillSingleValue(sql);
+                string result = _database.GetString(sql);
                 if (string.IsNullOrWhiteSpace(result)) return DateTime.MinValue;
                 return Convert.ToDateTime(result);
             }

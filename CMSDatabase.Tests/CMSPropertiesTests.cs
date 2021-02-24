@@ -1,5 +1,4 @@
-﻿using cms.database;
-using System;
+﻿using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MySql.Data.MySqlClient;
