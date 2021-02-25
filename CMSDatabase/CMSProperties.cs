@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MySql.Data.MySqlClient;
 using NLog;
 
 namespace cms.database
@@ -133,7 +134,7 @@ namespace cms.database
         public void SaveProperty(string propertyName, string value)
         {
             var ts = DateTime.UtcNow.ToString("yyyy/MM/dd HH:mm");
-            var sql = $"REPLACE INTO Properties (Timestamp,Property,Value) VALUES ('{ts}','{propertyName}','{value}')";
+            var sql = $"REPLACE INTO Properties (Timestamp,Property,Value) VALUES ('{ts}','{MySqlHelper.EscapeString(propertyName)}','{MySqlHelper.EscapeString(value)}')";
             _database.NonQuery(sql);
         }
 
