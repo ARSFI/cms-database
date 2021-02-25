@@ -9,7 +9,7 @@ namespace cms.database.Tests
     public class CMSPropertiesTests
     {
         static IConfiguration Configuration { get; set; }
-        private static ICMSDatabase _db;
+        private static ICMSDatabase _database;
 
         const string TestPropName = "Test-Prop-01";
 
@@ -28,20 +28,20 @@ namespace cms.database.Tests
                 UserID = Configuration["MySqlUser"],
                 Password = Configuration["MySqlPassword"]
             };
-            _db = new CMSDatabase(csb.ToString());
+            _database = new CMSDatabase(csb.ToString());
 
             //create database
-            _db.NonQuery("CREATE DATABASE IF NOT EXISTS TestDatabase");
-            _db.NonQuery("USE TestDatabase");
+            _database.NonQuery("CREATE DATABASE IF NOT EXISTS TestDatabase");
+            _database.NonQuery("USE TestDatabase");
 
             //create properties table
-            _db.NonQuery("CREATE TABLE IF NOT EXISTS Properties (Timestamp DATETIME NOT NULL, Property CHAR(150) NOT NULL, Value TEXT NOT NULL, PRIMARY KEY (Property));");
+            _database.NonQuery("CREATE TABLE IF NOT EXISTS Properties (Timestamp DATETIME NOT NULL, Property CHAR(150) NOT NULL, Value TEXT NOT NULL, PRIMARY KEY (Property));");
         }
 
         [TestMethod()]
         public void SavePropertyTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             var testValue = Guid.NewGuid().ToString();
             p.SaveProperty(TestPropName, testValue);
             var s = p.GetProperty(TestPropName, "");
@@ -51,7 +51,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void SavePropertyDateTimeTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             var d1 = DateTime.UtcNow;
             p.SaveProperty(TestPropName, d1);
             var d2 = p.GetProperty(TestPropName, DateTime.MinValue);
@@ -61,7 +61,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyBoolTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             p.SaveProperty(TestPropName, true);
             var b = p.GetProperty(TestPropName, false);
             Assert.AreEqual(b, true);
@@ -70,7 +70,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyBoolTestUsingInt1()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             p.SaveProperty(TestPropName, 1);
             var b = p.GetProperty(TestPropName, false);
             Assert.AreEqual(b, true);
@@ -79,7 +79,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyBoolTestUsingInt0()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             p.SaveProperty(TestPropName, 0);
             var b = p.GetProperty(TestPropName, true);
             Assert.AreEqual(b, false);
@@ -88,7 +88,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyBoolTestUsingYes()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             p.SaveProperty(TestPropName, "yes");
             var b = p.GetProperty(TestPropName, false);
             Assert.AreEqual(b, true);
@@ -97,7 +97,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyBoolTestUsingNo()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             p.SaveProperty(TestPropName, "no");
             var b = p.GetProperty(TestPropName, true);
             Assert.AreEqual(b, false);
@@ -106,7 +106,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyIntTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             Random rnd = new Random();
             var i1 = rnd.Next(1, 999);
             p.SaveProperty(TestPropName, i1);
@@ -117,7 +117,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyStringTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             var testValue = Guid.NewGuid().ToString();
             p.SaveProperty(TestPropName, testValue);
             var s = p.GetProperty(TestPropName, "");
@@ -127,7 +127,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyStringDefaultTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             p.DeleteProperty(TestPropName);
             var testValue = Guid.NewGuid().ToString();
             var s = p.GetProperty(TestPropName, testValue);
@@ -137,7 +137,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyTimestampTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             p.SaveProperty(TestPropName, "doesn't matter");
             var d = p.GetPropertyTimestamp(TestPropName);
             Assert.AreNotEqual(d, DateTime.MinValue);
@@ -146,7 +146,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void GetPropertyValueListTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             p.SaveProperty(TestPropName, "abc,123,xyz,789");
             var l = p.GetPropertyValueList(TestPropName, "1,2");
             Assert.AreEqual(l.Count, 4);
@@ -155,7 +155,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void DeletePropertyTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             var testValue = Guid.NewGuid().ToString();
             p.SaveProperty(TestPropName, testValue);
             Assert.IsTrue(p.PropertyExists(TestPropName));
@@ -167,7 +167,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void PropertyExistsTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             p.SaveProperty(TestPropName, "doesn't matter");
             Assert.IsTrue(p.PropertyExists(TestPropName));
         }
@@ -175,7 +175,7 @@ namespace cms.database.Tests
         [TestMethod()]
         public void PropertyNotExistsTest()
         {
-            var p = new CMSProperties(_db);
+            var p = new CMSProperties(_database);
             p.DeleteProperty(TestPropName);
             Assert.IsFalse(p.PropertyExists(TestPropName));
         }
