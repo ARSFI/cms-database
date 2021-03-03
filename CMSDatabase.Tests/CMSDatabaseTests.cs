@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MySql.Data.MySqlClient;
+using winlink.cms.data;
 
 namespace cms.database.Tests
 {
@@ -60,39 +61,39 @@ namespace cms.database.Tests
         }
 
         [TestMethod()]
-        public void GetBooleanTest()
+        public void FillSingleValueBooleanTest()
         {
             var p = new CMSProperties(_database);
             p.SaveProperty(Test01Name, true);
-            var b = _database.GetBoolean($"SELECT Value FROM Properties WHERE Property='{Test01Name}'");
+            var b = _database.FillSingleValueBoolean($"SELECT Value FROM Properties WHERE Property='{Test01Name}'");
             Assert.IsTrue(b);
         }
 
         [TestMethod()]
-        public void GetDateTimeTest()
+        public void FillSingleValueDateTimeTest()
         {
             var p = new CMSProperties(_database);
             var d1 = DateTime.UtcNow;
             p.SaveProperty(Test01Name, d1);
-            var d2 = _database.GetDateTime($"SELECT Value FROM Properties WHERE Property='{Test01Name}'");
+            var d2 = _database.FillSingleValueDateTime($"SELECT Value FROM Properties WHERE Property='{Test01Name}'");
             Assert.AreEqual(d1, d2);
         }
 
         [TestMethod()]
-        public void GetIntegerTest()
+        public void FillSingleValueIntegerTest()
         {
             var p = new CMSProperties(_database);
             p.SaveProperty(Test01Name, 42);
-            var i = _database.GetInteger($"SELECT Value FROM Properties WHERE Property='{Test01Name}'");
+            var i = _database.FillSingleValueInteger($"SELECT Value FROM Properties WHERE Property='{Test01Name}'");
             Assert.AreEqual(i, 42);
         }
 
         [TestMethod()]
-        public void GetStringTest()
+        public void FillSingleValueTest()
         {
             var p = new CMSProperties(_database);
             p.SaveProperty(Test01Name, "String Value");
-            var s = _database.GetString($"SELECT Value FROM Properties WHERE Property='{Test01Name}'");
+            var s = _database.FillSingleValue($"SELECT Value FROM Properties WHERE Property='{Test01Name}'");
             Assert.AreEqual(s, "String Value");
         }
 

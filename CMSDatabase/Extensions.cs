@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace cms.database
+namespace winlink.cms.data
 {
-    public static class Extensions
+    internal static class Extensions
     {
         /// <summary>
         /// Convert delimited string to string list, removing blank elements and trimming each item.

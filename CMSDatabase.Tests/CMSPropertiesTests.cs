@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MySql.Data.MySqlClient;
+using winlink.cms.data;
 
 namespace cms.database.Tests
 {

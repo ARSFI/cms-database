@@ -9,7 +9,7 @@ using Polly;
 
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 
-namespace cms.database
+namespace winlink.cms.data
 {
     public class CMSDatabase : ICMSDatabase
     {
@@ -21,7 +21,7 @@ namespace cms.database
         // 'warning'. After 7 failures an 'error' is reported.
         private readonly Policy _retryPolicy = Policy
             //Don't retry for syntax errors - they're not going away
-            .Handle<MySqlException>(ex => !ex.Message.Contains("syntax error", StringComparison.OrdinalIgnoreCase))
+            .Handle<MySqlException>(ex => ex.Message.IndexOf("syntax error", StringComparison.OrdinalIgnoreCase) == -1)
             .Or<TimeoutException>()
             .Or<IOException>()
             .WaitAndRetry(
@@ -89,7 +89,7 @@ namespace cms.database
             return ds;
         }
 
-        public string GetString(string sql)
+        public string FillSingleValue(string sql)
         {
             Debug.Assert(!string.IsNullOrEmpty(sql));
             Log.Trace($"Query: {sql}");
@@ -104,11 +104,13 @@ namespace cms.database
                     using MySqlCommand cmd = new MySqlCommand(sql, connection);
                     using MySqlDataAdapter adpMySql = new MySqlDataAdapter { SelectCommand = cmd };
                     adpMySql.Fill(ds, "Records");
-                    if (ds.Tables[0].Rows.Count > 0)
+                    if (ds.Tables[0].Rows.Count == 1)
                     {
                         result = Convert.ToString(ds.Tables[0].Rows[0][0]);
                         if (string.IsNullOrWhiteSpace(result)) result = "";
                     }
+                    else if (ds.Tables[0].Rows.Count == 0) throw new ZeroRecordsException();
+                    else if (ds.Tables[0].Rows.Count > 0) throw new MultipleRecordsException();
                 }, new Dictionary<string, object> { { "SQL", sql } });
             }
             catch (Exception ex)
@@ -119,11 +121,11 @@ namespace cms.database
             return result;
         }
 
-        public bool GetBoolean(string sql)
+        public bool FillSingleValueBoolean(string sql)
         {
             try
             {
-                var s = GetString(sql);
+                var s = FillSingleValue(sql);
                 if (string.IsNullOrWhiteSpace(s)) return false;
                 if (s == "1") return true;
                 if (s == "0") return false;
@@ -136,11 +138,11 @@ namespace cms.database
             }
         }
 
-        public DateTime GetDateTime(string sql)
+        public DateTime FillSingleValueDateTime(string sql)
         {
             try
             {
-                var s = GetString(sql);
+                var s = FillSingleValue(sql);
                 return DateTime.Parse(s, null, System.Globalization.DateTimeStyles.RoundtripKind);
             }
             catch (Exception ex)
@@ -150,11 +152,11 @@ namespace cms.database
             }
         }
 
-        public int GetInteger(string sql)
+        public int FillSingleValueInteger(string sql)
         {
             try
             {
-                var s = GetString(sql);
+                var s = FillSingleValue(sql);
                 if (int.TryParse(s, out var result)) return result;
                 return -1;
             }

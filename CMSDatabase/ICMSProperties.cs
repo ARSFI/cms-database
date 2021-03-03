@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace cms.database
+namespace winlink.cms.data
 {
     /// <summary>
     /// This class provides methods to save and retrieve properties from the CMS Properties table.

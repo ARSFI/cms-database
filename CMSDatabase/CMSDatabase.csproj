@@ -1,14 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>cms.database</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>winlink.cms.data</RootNamespace>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MySql.Data" Version="6.10.7" />
-    <PackageReference Include="NLog" Version="4.7.7" />
-    <PackageReference Include="Polly" Version="7.2.1" />
+    <PackageReference Include="NLog" Version="4.6.8" />
+    <PackageReference Include="Polly" Version="6.1.2" />
   </ItemGroup>
 
 </Project>
