@@ -63,12 +63,6 @@ namespace winlink.cms.data
             return Convert.ToInt32(GetProperty(propertyName, defaultValue.ToString()));
         }
 
-        public DateTime GetProperty(string propertyName, DateTime defaultValue)
-        {
-            var s = GetProperty(propertyName, ""); //get value as a string
-            return DateTime.Parse(s, null, System.Globalization.DateTimeStyles.RoundtripKind);
-        }
-
         public List<string> GetPropertyValueList(string propertyName, string defaultValue)
         {
             var list = new List<string>();

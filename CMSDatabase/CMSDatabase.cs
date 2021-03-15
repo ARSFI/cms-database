@@ -104,13 +104,11 @@ namespace winlink.cms.data
                     using MySqlCommand cmd = new MySqlCommand(sql, connection);
                     using MySqlDataAdapter adpMySql = new MySqlDataAdapter { SelectCommand = cmd };
                     adpMySql.Fill(ds, "Records");
-                    if (ds.Tables[0].Rows.Count == 1)
+                    if (ds.Tables[0].Rows.Count > 0)
                     {
                         result = Convert.ToString(ds.Tables[0].Rows[0][0]);
                         if (string.IsNullOrWhiteSpace(result)) result = "";
                     }
-                    else if (ds.Tables[0].Rows.Count == 0) throw new ZeroRecordsException();
-                    else if (ds.Tables[0].Rows.Count > 0) throw new MultipleRecordsException();
                 }, new Dictionary<string, object> { { "SQL", sql } });
             }
             catch (Exception ex)
